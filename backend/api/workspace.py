@@ -16,27 +16,42 @@ class TaskIngestionRequest(BaseModel):
     query: str
 
 @router.post("/ingest")
-async def ingest_task(request: TaskIngestionRequest, llm: GeminiProvider = Depends(get_llm)):
+async def ingest_task(req: TaskIngestionRequest, llm: GeminiProvider = Depends(get_llm)): # Changed request to req
     # 1. Load active user profile context
     profile = profile_manager.load_profile()
-    profile_summary = profile.get("body", "") if profile else "No specific profile."
-    
-    # 2. Prompt LLM for expansion
+    profile_summary = profile.get("body", "Generic User") if profile else "Generic User"
+
+    prompt_path = os.path.join(os.path.dirname(__file__), "../prompts/domain_expansion.md")
+    with open(prompt_path, "r") as f:
+        system_prompt = f.read()
+
     messages = [
-        {"role": "system", "content": f"You are an expert Staff+ AI architect. The user's technical profile is:\n{profile_summary}\n\nTask: Break down the user's querying into 3-5 distinct, highly technical subdomains that must be researched to find the state-of-the-art LLMs for their specific task. Be sure to tailor this to their specific profile."},
-        {"role": "user", "content": request.query}
+        {"role": "system", "content": system_prompt + f"\nUser Profile:\n{profile_summary}"},
+        {"role": "user", "content": f"Task Query: {req.query}"}
     ]
     
-    expansion: DomainExpansionResponse = await llm.generate_json(messages, DomainExpansionResponse)
+    response = await llm.generate_json(messages, DomainExpansionResponse)
+    response.orchestrator_model = llm.model_name
     
-    # 3. Save to workspace manager
-    ws_id = workspace_manager.create_workspace(request.query, expansion.domains)
+    # Save to SQLite Workspace
+    ws_id = workspace_manager.create_workspace(req.query, response.domains)
     
-    return {"status": "success", "workspace_id": ws_id, "domains": expansion.domains}
+    return {
+        "status": "success",
+        "workspace_id": ws_id,
+        "query": req.query,
+        "domains": [d.model_dump() for d in response.domains],
+        "orchestrator_model": response.orchestrator_model
+    }
 
 @router.get("/{workspace_id}")
 def get_workspace(workspace_id: str):
     ws = workspace_manager.get_workspace(workspace_id)
     if not ws:
-        return {"status": "error", "message": "Workspace not found"}
-    return {"status": "success", "workspace": ws}
+        return {"status": "error", "message": "Not found"}
+    return {"status": "success", "workspace": {
+        "workspace_id": ws["id"],
+        "query": ws.get("user_query", ""),
+        "domains": ws.get("domains", []),
+        "orchestrator_model": "gemini-3-pro-preview" # For retrospective loads
+    }}

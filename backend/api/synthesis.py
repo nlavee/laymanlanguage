@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Depends
 from backend.models.synthesis import SynthesisResponse
 from backend.llm.gemini import GeminiProvider
@@ -24,10 +25,14 @@ async def synthesize_results(workspace_id: str, llm: GeminiProvider = Depends(ge
     # 2. Fetch Profile Persona
     profile = profile_manager.load_profile()
     profile_summary = profile.get("body", "Generic User") if profile else "Generic User"
+    
+    prompt_path = os.path.join(os.path.dirname(__file__), "../prompts/synthesis.md")
+    with open(prompt_path, "r") as f:
+        system_prompt = f.read()
 
     # 3. LLM JSON generation
     messages = [
-        {"role": "system", "content": f"You are an expert Staff+ AI architect. Synthesize recent LLM research into a layman recommendation tailored strictly to this user:\n{profile_summary}\n\nThe user needs to know what models are optimal for their task, visualizing tradeoffs (capability vs cost/ease) on a pareto frontier, and a roadmap timeline."},
+        {"role": "system", "content": system_prompt + f"\nUser Profile:\n{profile_summary}"},
         {"role": "user", "content": f"Research Context extracted from SQLite FTS5:\n{data_context}\n\nOutputs must adhere to the JSON schema."}
     ]
     

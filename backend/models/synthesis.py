@@ -22,4 +22,5 @@ class SynthesisResponse(BaseModel):
     summary: str = Field(description="Executive Layman translation of what models suit the user best based on their profile and domain.")
     ranked_models: List[ModelRank]
     pareto_data: List[ParetoDataPoint]
-    timeline: List[TimelineEvent]
+    historical_timeline: List[TimelineEvent] = Field(description="Historical breakthroughs in this domain")
+    implementation_timeline: List[TimelineEvent] = Field(description="Projected roadmap implementation")
