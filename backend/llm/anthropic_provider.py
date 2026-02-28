@@ -21,9 +21,9 @@ class AnthropicProvider(LLMProvider):
              
         load_dotenv(dotenv_path=env_path)
         
-        key = api_key or os.getenv("ANTHROPIC_API_KEY")
+        key = api_key or os.getenv("ANTHROPIC_API_KEY") or os.getenv("CLAUDE_API_KEY")
         if not key:
-            raise ValueError(f"Anthropic API Key not found. Tried loading .env from {env_path}")
+            raise ValueError(f"Anthropic/Claude API Key not found. Tried loading .env from {env_path}")
             
         # Initialize async anthropic client
         base_client = anthropic.AsyncAnthropic(api_key=key)

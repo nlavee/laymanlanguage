@@ -18,7 +18,12 @@ class WorkspaceManager:
                 "id": str,
                 "created_at": str,
                 "user_query": str,
+                "orchestrator_model": str
             }, pk="id")
+        else:
+            # Ensure orchestrator_model column exists
+            if "orchestrator_model" not in self.db["workspaces"].columns_dict:
+                self.db["workspaces"].add_column("orchestrator_model", str)
             
         if "domains" not in self.db.table_names():
             self.db["domains"].create({
@@ -39,7 +44,8 @@ class WorkspaceManager:
         self.db["workspaces"].insert({
             "id": ws_id,
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "user_query": user_query
+            "user_query": user_query,
+            "orchestrator_model": "gemini-3-pro-preview" # Default
         })
         
         for d in domains:
@@ -53,6 +59,9 @@ class WorkspaceManager:
             })
             
         return ws_id
+
+    def update_workspace(self, workspace_id: str, updates: Dict[str, Any]):
+        self.db["workspaces"].update(workspace_id, updates)
 
     def get_workspace(self, workspace_id: str) -> Optional[Dict[str, Any]]:
         try:
