@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from backend.models.synthesis import SynthesisResponse
 from backend.llm.gemini import GeminiProvider
+from backend.llm.anthropic_provider import AnthropicProvider
+from backend.llm.openai_provider import OpenAIProvider
 from backend.storage.profile_manager import profile_manager
 from backend.storage.workspace_manager import workspace_manager
 from backend.storage.knowledgebase import knowledge_base
@@ -13,11 +15,8 @@ class DomainDeepDive(BaseModel):
 
 router = APIRouter(prefix="/api/synthesis", tags=["synthesis"])
 
-def get_llm():
-    return GeminiProvider()
-
 @router.get("/{workspace_id}", response_model=SynthesisResponse)
-async def synthesize_results(workspace_id: str, llm: GeminiProvider = Depends(get_llm)):
+async def synthesize_results(workspace_id: str):
     # 1. Fetch ALL scraped/searched data from FTS5
     # For a real implementation, we'd search specifically by workspace_id and relevance.
     # Here, we grab general documents ingested during orchestration.
@@ -31,6 +30,15 @@ async def synthesize_results(workspace_id: str, llm: GeminiProvider = Depends(ge
     ws = workspace_manager.get_workspace(workspace_id)
     domains = ws.get("domains", []) if ws else []
     
+    # 2b. Instantiate the correct LLM
+    model_id = ws.get("orchestrator_model", "gemini-3-pro-preview") if ws else "gemini-3-pro-preview"
+    if "claude" in model_id.lower():
+        llm = AnthropicProvider(model_name=model_id)
+    elif "gpt" in model_id.lower() or "o1" in model_id.lower() or "o3" in model_id.lower():
+        llm = OpenAIProvider(model_name=model_id)
+    else:
+        llm = GeminiProvider(model_name=model_id)
+
     # 3. Fetch Profile Persona
     profile = profile_manager.load_profile()
     profile_summary = profile.get("body", "Generic User") if profile else "Generic User"

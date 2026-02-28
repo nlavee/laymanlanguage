@@ -10,14 +10,23 @@ from backend.storage.workspace_manager import workspace_manager
 
 router = APIRouter(prefix="/api/workspace", tags=["workspace"])
 
-def get_llm():
-    return GeminiProvider()
+from backend.llm.anthropic_provider import AnthropicProvider
+from backend.llm.openai_provider import OpenAIProvider
 
 class TaskIngestionRequest(BaseModel):
     query: str
+    model_id: str = "gemini-3-pro-preview"
 
 @router.post("/ingest")
-async def ingest_task(req: TaskIngestionRequest, llm: GeminiProvider = Depends(get_llm)): # Changed request to req
+async def ingest_task(req: TaskIngestionRequest):
+    # Determine the LLM Provider based on user selection
+    if "claude" in req.model_id.lower():
+        llm = AnthropicProvider(model_name=req.model_id)
+    elif "gpt" in req.model_id.lower() or "o1" in req.model_id.lower() or "o3" in req.model_id.lower():
+        llm = OpenAIProvider(model_name=req.model_id)
+    else:
+        llm = GeminiProvider(model_name=req.model_id)
+
     # 1. Load active user profile context
     profile = profile_manager.load_profile()
     profile_summary = profile.get("body", "Generic User") if profile else "Generic User"
@@ -32,17 +41,17 @@ async def ingest_task(req: TaskIngestionRequest, llm: GeminiProvider = Depends(g
     ]
     
     response = await llm.generate_json(messages, DomainExpansionResponse)
-    response.orchestrator_model = llm.model_name
     
-    # Save to SQLite Workspace
+    # Save the selected orchestrator model down into the SQLite workspace state
     ws_id = workspace_manager.create_workspace(req.query, response.domains)
+    workspace_manager.update_workspace(ws_id, {"orchestrator_model": req.model_id})
     
     return {
         "status": "success",
         "workspace_id": ws_id,
         "query": req.query,
         "domains": [d.model_dump() for d in response.domains],
-        "orchestrator_model": response.orchestrator_model
+        "orchestrator_model": req.model_id
     }
 
 @router.get("/{workspace_id}")
@@ -54,5 +63,5 @@ def get_workspace(workspace_id: str):
         "workspace_id": ws["id"],
         "query": ws.get("user_query", ""),
         "domains": ws.get("domains", []),
-        "orchestrator_model": "gemini-3-pro-preview" # For retrospective loads
+        "orchestrator_model": ws.get("orchestrator_model", "gemini-3-pro-preview")
     }}
