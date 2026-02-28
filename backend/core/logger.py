@@ -1,7 +1,7 @@
 import asyncio
 import json
 from typing import AsyncGenerator, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 
 class StreamLogger:
     def __init__(self):
@@ -20,7 +20,7 @@ class StreamLogger:
         """Log an event and push it to the queue for SSE streaming."""
         if session_id in self.queues:
             event_data = {
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "type": event_type,
                 "payload": payload
             }

@@ -33,12 +33,12 @@ class WorkspaceManager:
             ])
 
     def create_workspace(self, user_query: str, domains: List[DomainExpansion]) -> str:
-        from datetime import datetime
+        from datetime import datetime, timezone
         ws_id = str(uuid.uuid4())
         
         self.db["workspaces"].insert({
             "id": ws_id,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
             "user_query": user_query
         })
         
