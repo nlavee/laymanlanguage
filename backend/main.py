@@ -5,7 +5,8 @@ import asyncio
 import uuid
 
 from backend.core.logger import stream_logger
-from backend.api import profile, workspace, orchestrator, synthesis
+from backend.api import profile, workspace, orchestrator, synthesis, auth
+from backend.core.auth_utils import get_current_user
 
 app = FastAPI(title="layman.ai API")
 
@@ -17,10 +18,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(profile.router)
-app.include_router(workspace.router)
-app.include_router(orchestrator.router)
-app.include_router(synthesis.router)
+app.include_router(auth.router)
+app.include_router(profile.router, dependencies=[Depends(get_current_user)])
+app.include_router(workspace.router, dependencies=[Depends(get_current_user)])
+app.include_router(orchestrator.router, dependencies=[Depends(get_current_user)])
+app.include_router(synthesis.router, dependencies=[Depends(get_current_user)])
 
 @app.get("/health")
 def health_check():
