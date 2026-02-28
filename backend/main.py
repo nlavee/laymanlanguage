@@ -5,7 +5,7 @@ import asyncio
 import uuid
 
 from backend.core.logger import stream_logger
-from backend.api import profile, workspace, orchestrator
+from backend.api import profile, workspace, orchestrator, synthesis
 
 app = FastAPI(title="Layman Language Disclosed API")
 
@@ -20,6 +20,7 @@ app.add_middleware(
 app.include_router(profile.router)
 app.include_router(workspace.router)
 app.include_router(orchestrator.router)
+app.include_router(synthesis.router)
 
 @app.get("/health")
 def health_check():
