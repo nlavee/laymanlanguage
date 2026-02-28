@@ -15,7 +15,14 @@ def test_workspace_creation():
     manager = wm.WorkspaceManager()
     
     q = DomainQuery(query="Test search", rationale="Test rationale")
-    d = DomainExpansion(id="dom_1", name="Domain 1", description="Test domain", search_queries=[q])
+    d = DomainExpansion(
+        id="dom_1", 
+        name="Domain 1", 
+        description="Test domain", 
+        search_queries=[q],
+        assumptions=[],
+        target_models=[]
+    )
     
     ws_id = manager.create_workspace("Test user query", [d])
     assert ws_id is not None

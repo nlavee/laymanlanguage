@@ -7,7 +7,7 @@ import uuid
 from backend.core.logger import stream_logger
 from backend.api import profile, workspace, orchestrator, synthesis
 
-app = FastAPI(title="Layman Language Disclosed API")
+app = FastAPI(title="layman.ai API")
 
 app.add_middleware(
     CORSMiddleware,
