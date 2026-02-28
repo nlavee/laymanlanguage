@@ -10,24 +10,24 @@ from backend.storage.profile_manager import profile_manager
 from backend.storage.workspace_manager import workspace_manager
 from backend.storage.knowledgebase import knowledge_base
 
+from backend.core.auth_utils import get_current_user
+
 class DomainDeepDive(BaseModel):
     deep_dive_markdown: str
 
 router = APIRouter(prefix="/api/synthesis", tags=["synthesis"])
 
 @router.get("/{workspace_id}", response_model=SynthesisResponse)
-async def synthesize_results(workspace_id: str):
-    # 1. Fetch ALL scraped/searched data from FTS5
-    # For a real implementation, we'd search specifically by workspace_id and relevance.
-    # Here, we grab general documents ingested during orchestration.
-    docs = knowledge_base.search(f"{workspace_id}*", limit=20)
-    data_context = "\n".join([d.get('content', '') for d in docs])
-    
-    if not data_context:
-        data_context = "Simulation mode context: Top models evaluated were GPT-4, Gemini Pro, and Llama-3."
-    
+async def synthesize_results(workspace_id: str, current_user: dict = Depends(get_current_user)):
     # 2. Fetch Workspace Domains for targeted deep dives
     ws = workspace_manager.get_workspace(workspace_id)
+    if not ws or ws.get("user_id") != current_user["username"]:
+         from fastapi import HTTPException
+         raise HTTPException(status_code=403, detail="Unauthorized")
+         
+    # 1. Fetch ALL scraped/searched data from FTS5
+    docs = knowledge_base.search(f"{workspace_id}*", limit=20)
+    data_context = "\n".join([d.get('content', '') for d in docs])
     domains = ws.get("domains", []) if ws else []
     
     # 2b. Instantiate the correct LLM
@@ -40,7 +40,7 @@ async def synthesize_results(workspace_id: str):
         llm = GeminiProvider(model_name=model_id)
 
     # 3. Fetch Profile Persona
-    profile = profile_manager.load_profile()
+    profile = profile_manager.load_profile(current_user["username"])
     profile_summary = profile.get("body", "Generic User") if profile else "Generic User"
     
     # 4. Perform Parallel Deep-Dives per domain

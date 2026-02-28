@@ -16,14 +16,18 @@ class WorkspaceManager:
         if "workspaces" not in self.db.table_names():
             self.db["workspaces"].create({
                 "id": str,
+                "user_id": str,
                 "created_at": str,
                 "user_query": str,
                 "orchestrator_model": str
             }, pk="id")
+            self.db["workspaces"].create_index(["user_id"])
         else:
             # Ensure orchestrator_model column exists
             if "orchestrator_model" not in self.db["workspaces"].columns_dict:
                 self.db["workspaces"].add_column("orchestrator_model", str)
+            if "user_id" not in self.db["workspaces"].columns_dict:
+                self.db["workspaces"].add_column("user_id", str)
             
         if "domains" not in self.db.table_names():
             self.db["domains"].create({
@@ -37,12 +41,13 @@ class WorkspaceManager:
                 ("workspace_id", "workspaces", "id")
             ])
 
-    def create_workspace(self, user_query: str, domains: List[DomainExpansion]) -> str:
+    def create_workspace(self, user_id: str, user_query: str, domains: List[DomainExpansion]) -> str:
         from datetime import datetime, timezone
         ws_id = str(uuid.uuid4())
         
         self.db["workspaces"].insert({
             "id": ws_id,
+            "user_id": user_id,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "user_query": user_query,
             "orchestrator_model": "gemini-3-pro-preview" # Default
@@ -73,5 +78,8 @@ class WorkspaceManager:
             return ws
         except Exception:
             return None
+
+    def list_workspaces(self, user_id: str) -> List[Dict[str, Any]]:
+        return list(self.db["workspaces"].rows_where("user_id = ?", [user_id], order_by="created_at desc"))
 
 workspace_manager = WorkspaceManager()

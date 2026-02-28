@@ -1,7 +1,4 @@
-from fastapi import APIRouter, Depends
-from backend.models.profile import ProfileQuestionnaireResponse, ProfileSynthesisResponse
-from backend.llm.gemini import GeminiProvider
-from backend.storage.profile_manager import profile_manager
+from backend.core.auth_utils import get_current_user
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])
 
@@ -18,7 +15,7 @@ async def get_questions(llm: GeminiProvider = Depends(get_llm)):
     return response
 
 @router.post("/save")
-async def save_profile(answers: dict, llm: GeminiProvider = Depends(get_llm)):
+async def save_profile(answers: dict, llm: GeminiProvider = Depends(get_llm), current_user: dict = Depends(get_current_user)):
     messages = [
         {"role": "system", "content": "You are an expert AI synthesizing user characteristics into explicit structured traits."},
         {"role": "user", "content": f"Based on the following answers to the profiling questions, synthesize a detailed profile summary and explicitly define the traits. Answers chosen: {answers}"}
@@ -26,20 +23,20 @@ async def save_profile(answers: dict, llm: GeminiProvider = Depends(get_llm)):
     synthesis: ProfileSynthesisResponse = await llm.generate_json(messages, ProfileSynthesisResponse)
     
     traits_dict = {t.category: t.value for t in synthesis.traits}
-    profile_manager.save_profile(synthesis.overall_summary, traits_dict)
+    profile_manager.save_profile(current_user["username"], synthesis.overall_summary, traits_dict)
     
-    return {"status": "success", "profile": profile_manager.load_profile()}
+    return {"status": "success", "profile": profile_manager.load_profile(current_user["username"])}
 
 @router.get("/")
-def get_current_profile():
-    return profile_manager.load_profile()
+def get_current_profile(current_user: dict = Depends(get_current_user)):
+    return profile_manager.load_profile(current_user["username"])
 
 @router.delete("/trait/{trait_category}")
-def delete_trait(trait_category: str):
-    success = profile_manager.delete_trait(trait_category)
+def delete_trait(trait_category: str, current_user: dict = Depends(get_current_user)):
+    success = profile_manager.delete_trait(current_user["username"], trait_category)
     return {"status": "success" if success else "not_found"}
 
 @router.delete("/")
-def reset_profile():
-    profile_manager.reset_profile()
+def reset_profile(current_user: dict = Depends(get_current_user)):
+    profile_manager.reset_profile(current_user["username"])
     return {"status": "success"}
