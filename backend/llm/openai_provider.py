@@ -8,10 +8,21 @@ from backend.llm.provider import LLMProvider
 class OpenAIProvider(LLMProvider):
     def __init__(self, model_name: str = "gpt-5.2-2025-12-11", api_key: Optional[str] = None):
         from dotenv import load_dotenv
-        load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '../../../.env'))
+        
+        # Traverse up to find the root directory containing .env
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+        env_path = os.path.join(root_dir, '.env')
+        
+        # Fallback if the traverse fails (e.g. running from slightly different context)
+        if not os.path.exists(env_path):
+             env_path = os.path.join(os.getcwd(), '.env')
+             
+        load_dotenv(dotenv_path=env_path)
+        
         key = api_key or os.getenv("OPENAI_API_KEY")
         if not key:
-            raise ValueError("OpenAI API Key not found")
+            raise ValueError(f"OpenAI API Key not found. Tried loading .env from {env_path}")
         self.client = AsyncOpenAI(api_key=key)
         self.model_name = model_name
 
