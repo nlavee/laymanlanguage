@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Presenton, Theme, ExportFormat, Tone, Template } from 'presenton';
-import { transformToMarkdown } from '@/lib/presenton-transformer';
+import { transformToMarkdown } from './transformer';
 import { SynthesisResponse } from '@/api/client';
 import dotenv from 'dotenv';
 import path from 'path';
