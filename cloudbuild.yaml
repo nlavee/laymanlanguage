@@ -1,0 +1,70 @@
+steps:
+  # 1. Build the backend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:$COMMIT_SHA', './backend']
+    id: 'build-backend'
+
+  # 2. Push the backend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:$COMMIT_SHA']
+    id: 'push-backend'
+
+  # 3. Deploy the backend to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud run deploy layman-backend 
+          --image us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:$COMMIT_SHA 
+          --region us-central1 
+          --platform managed 
+          --allow-unauthenticated 
+          --set-secrets="JWT_SECRET=JWT_SECRET:latest,CLAUDE_API_KEY=CLAUDE_API_KEY:latest,GOOGLE_API_KEY=GOOGLE_API_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" 
+          --format="value(status.url)" > /workspace/backend_url.txt
+    id: 'deploy-backend'
+
+  # 4. Build the frontend Docker image (injecting backend URL as build arg)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        export BACKEND_URL=$(cat /workspace/backend_url.txt)
+        echo "Building frontend with BACKEND_URL=$BACKEND_URL"
+        docker build --build-arg NEXT_PUBLIC_API_URL=$BACKEND_URL 
+          -t us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/frontend:$COMMIT_SHA 
+          ./frontend
+    id: 'build-frontend'
+    waitFor: ['deploy-backend']
+
+  # 5. Push the frontend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/frontend:$COMMIT_SHA']
+    id: 'push-frontend'
+    waitFor: ['build-frontend']
+
+  # 6. Deploy the frontend to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'layman-frontend'
+      - '--image'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/frontend:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-secrets=PRESENTON_API_KEY=PRESENTON_API_KEY:latest'
+    id: 'deploy-frontend'
+    waitFor: ['push-frontend']
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:$COMMIT_SHA'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/frontend:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
