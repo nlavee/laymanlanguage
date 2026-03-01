@@ -9,6 +9,6 @@ You must generate:
 2. **Ranked Models**: A stack rank of at least 3 models (targeting SOTA models like Claude Opus 4.6, Gemini 3.1, GPT-5.2 where relevant), strictly scoring their Capabilities, Ease of Use, and Cost Efficiency (0-100). Provide an exhaustive, deeply technical rationale for *why* they rank there based on the context. Mention limitations openly.
 3. **Pareto Data**: A mapping of the models onto a Pareto frontier (Ease/Cost vs Capability).
 4. **Historical Timeline**: Trace the history of the technical domains relevant to the query. Show the key milestone breakthroughs over the past few years that led to the current state of the art. Explain the *significance* of these milestones, not just the name.
-5. **Implementation Timeline**: A projected roadmap (e.g. Month 1, Month 2) for the user to successfully build their application using the recommended models. Include potential technical hurdles.
+5. **Implementation Timeline**: A projected roadmap (e.g. Month 1, Month 2, Month 3) for the user to successfully build their application using the recommended models. Include potential technical hurdles. Ensure the timeline is strictly sequential and continuously increments from start to finish without resetting or restarting the count.
 
 Do not hallucinate model features. Extrapolate intelligently from the provided context. Your output must strictly adhere to the expected JSON schema and demonstrate ultimate Staff+ engineering depth.

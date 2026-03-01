@@ -16,7 +16,7 @@ class ParetoDataPoint(BaseModel):
 class TimelineEvent(BaseModel):
     title: str = Field(description="Milestone or feature requirement")
     description: str
-    date: str = Field(description="Estimated timeline length or stage (e.g. 'Month 1' or 'Phase 1')")
+    date: str = Field(description="Strictly sequential timeline length or stage (e.g. 'Month 1', 'Month 2', 'Month 3'). Do not restart the count.")
 
 class SynthesisResponse(BaseModel):
     summary: str = Field(description="Executive Layman translation of what models suit the user best based on their profile and domain.")
