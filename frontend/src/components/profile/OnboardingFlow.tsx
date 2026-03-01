@@ -59,7 +59,7 @@ export default function OnboardingFlow() {
             Configure Technical Persona
         </h1>
         <p className="text-neutral-400 text-[17px]">
-            To provide precise architectural constraints, laymen.ai needs to map your background depth.
+            To provide precise architectural constraints, layman.vuishere.com needs to map your background depth.
         </p>
       </div>
 
