@@ -4,8 +4,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchQuestions, saveProfile, QuestionOption } from "@/api/client";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function OnboardingFlow() {
+  const { token } = useAuth();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, QuestionOption>>({});
@@ -13,6 +15,7 @@ export default function OnboardingFlow() {
   const { data: qData, isLoading: isLoadingQuestions, error: qError } = useQuery({
     queryKey: ["profile-questions"],
     queryFn: fetchQuestions,
+    enabled: !!token,   // Only fire once the auth token is available
   });
 
   const saveMutation = useMutation({
