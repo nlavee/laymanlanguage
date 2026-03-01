@@ -14,12 +14,49 @@ from backend.core.auth_utils import get_current_user
 
 app = FastAPI(title="layman.vuishere.com API")
 
+@app.on_event("startup")
+async def startup_event():
+    # Auto-seed the database if no users exist
+    from backend.storage.user_manager import user_manager
+    from backend.core.auth_utils import get_password_hash
+    import secrets
+    
+    # Check if we have any users
+    try:
+        users = list(user_manager.db["users"].rows)
+    except Exception:
+        users = []
+        
+    if not users:
+        print("Empty database detected. Seeding production accounts...")
+        users_to_create = [
+            ("admin", "admin@layman.vuishere.com"),
+            ("architect", "architect@layman.vuishere.com"),
+            ("lead", "lead@layman.vuishere.com")
+        ]
+        
+        # In a real production app, you might want to fetch these from secrets
+        # For now, we generate random ones and log them (Cloud Run logs are secure)
+        for username, email in users_to_create:
+            # We use a fixed password for the first 'admin' for easy access if requested,
+            # but user requested non-obvious ones.
+            password = secrets.token_urlsafe(16)
+            hashed = get_password_hash(password)
+            user_manager.create_user(
+                username=username,
+                email=email,
+                password_hash=hashed,
+                is_verified=True
+            )
+            print(f"CREATED USER: {username} | PASS: {password}")
+    
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://0.0.0.0:3000",
+        "https://layman.vuishere.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -46,4 +83,5 @@ async def stream_logs(session_id: str, request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=False)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=port, reload=False)

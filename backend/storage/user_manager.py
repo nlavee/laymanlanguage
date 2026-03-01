@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 from sqlite_utils import Database
 
-USER_DB = os.path.join(os.path.dirname(__file__), "../../../brain/users.db")
+USER_DB = os.path.join(os.path.dirname(__file__), "../../brain/users.db")
 
 class UserManager:
     def __init__(self):

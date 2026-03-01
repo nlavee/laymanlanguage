@@ -4,7 +4,7 @@ import json
 from typing import List, Dict, Any
 from sqlite_utils import Database
 
-KNOWLEDGE_DB = os.path.join(os.path.dirname(__file__), "../../../brain/knowledge.db")
+KNOWLEDGE_DB = os.path.join(os.path.dirname(__file__), "../../brain/knowledge.db")
 
 class KnowledgeBase:
     def __init__(self):

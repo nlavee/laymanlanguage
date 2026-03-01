@@ -5,7 +5,7 @@ from typing import List, Optional, Dict, Any
 from sqlite_utils import Database
 from backend.models.domain import DomainExpansion
 
-WORKSPACE_DB = os.path.join(os.path.dirname(__file__), "../../../brain/workspace.db")
+WORKSPACE_DB = os.path.join(os.path.dirname(__file__), "../../brain/workspace.db")
 
 class WorkspaceManager:
     def __init__(self):
