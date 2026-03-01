@@ -14,15 +14,12 @@ class OpenAIProvider(LLMProvider):
         root_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
         env_path = os.path.join(root_dir, '.env')
         
-        # Fallback if the traverse fails (e.g. running from slightly different context)
-        if not os.path.exists(env_path):
-             env_path = os.path.join(os.getcwd(), '.env')
-             
-        load_dotenv(dotenv_path=env_path)
+        if os.path.exists(env_path):
+            load_dotenv(dotenv_path=env_path)
         
         key = api_key or os.getenv("OPENAI_API_KEY")
         if not key:
-            raise ValueError(f"OpenAI API Key not found. Tried loading .env from {env_path}")
+            raise ValueError(f"OpenAI API Key not found in environment or {env_path}")
         self.client = AsyncOpenAI(api_key=key)
         self.model_name = model_name
 
