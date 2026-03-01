@@ -39,4 +39,4 @@ brain/
 # Web and Node
 node_modules/
 .DS_Store
-.vscode/.env.credentials
+.vscode/
