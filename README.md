@@ -46,6 +46,7 @@ User Query → Domain Expansion → Parallel Research → Synthesis Report
 | ⚡ **Real-time Streaming** | Server-Sent Events (SSE) for live orchestrator activity logs |
 | 🔐 **Auth & Personalization** | JWT-secured accounts with configurable technical personas per user |
 | 🎨 **Premium UI** | Glassmorphism, micro-animations, and dark-mode-first design |
+| 🎵 **Premium Presentation Export**| Automated boardroom-ready slide generation with integrated charting via Presenton SDK |
 
 ---
 
@@ -57,6 +58,7 @@ User Query → Domain Expansion → Parallel Research → Synthesis Report
 | `/profile` | Configure your technical persona & background depth |
 | `/login` | Sign in to unlock full orchestration |
 | `/signup` | Create an account |
+| `/api/export` | Internal Next.js API route proxying slide generation requests to Presenton |
 
 ---
 
@@ -67,6 +69,8 @@ User Query → Domain Expansion → Parallel Research → Synthesis Report
 **Backend** · FastAPI · Python 3.12 · SQLite (`sqlite-utils`) · JWT (HS256)
 
 **LLM Providers** · Anthropic (Claude 4.5 Haiku / Claude 4.6 Sonnet) · Google Gemini 3 Pro · OpenAI GPT-5
+
+**Presentation Engine** · Presenton SDK (with QuickChart.io integration)
 
 ---
 
@@ -98,19 +102,41 @@ JWT_SECRET=your-secret-here
 CLAUDE_API_KEY=sk-ant-...
 GOOGLE_API_KEY=AIza...
 OPENAI_API_KEY=sk-...
+PRESENTON_API_KEY=sk-presenton-...
 ```
 
 ---
 
-## Deployment
+## Google Cloud Platform (GCP) Deployment Architecture
 
-The project is containerized and optimized for **Google Cloud Platform**:
+The platform is designed to be fully containerized and deployed on Google Cloud Platform, adhering to strict enterprise security standards. **Local `.env` files are strictly excluded from source control and are replaced by Google Secret Manager in production.**
 
-- **Compute**: Cloud Run (serverless, auto-scaling)
-- **Persistence**: GCS Fuse for SQLite database mounting
-- **Secrets**: Google Secret Manager for all API keys and JWT secrets
+### Architecture Overview
+- **Frontend Compute**: Cloud Run (Serverless, Auto-scaling container).
+- **Backend Compute**: Cloud Run or Google Kubernetes Engine (GKE) for orchestrator workloads.
+- **Persistence**: GCS Fuse mapped to Cloud Run for SQLite database mounting, or Cloud SQL.
+- **Secret Management**: Google Secret Manager for all LLM API Keys, JWT Secrets, and Presenton keys.
 
-See `docs/deployment_gcp.md` for the complete step-by-step guide.
+### 1. GCP Project Setup & Config
+1. Initialize a new GCP project.
+2. Enable necessary APIs: `Secret Manager API`, `Cloud Build API`, `Cloud Run Admin API`, `Artifact Registry API`.
+3. Separate GCP projects or resource labeling are used for defining distinct `dev`, `staging`, and `prod` environment configurations.
+
+### 2. Secret Manager Integration
+- **Storage**: Secrets are securely created in Google Secret Manager (`JWT_SECRET`, `CLAUDE_API_KEY`, `GOOGLE_API_KEY`, `OPENAI_API_KEY`, `PRESENTON_API_KEY`) with explicit versioning.
+- **Injection**: The application containers fetch these secrets at runtime. In Cloud Run, this is achieved natively by mapping Secret Manager paths directly to environment variables, requiring zero SDK code changes in the app layer.
+- **Access Control (IAM)**: Specific Service Accounts attached to the Cloud Run instances are granted the `Secret Manager Secret Accessor` role, enforcing the principle of least privilege.
+- **Rotation**: Automated secret rotation policies are orchestrated using Cloud Scheduler and Cloud Functions to cycle API keys periodically without downtime.
+
+### 3. CI/CD Pipeline (Cloud Build)
+A fully automated CI/CD pipeline ensures secure, consistent deployments:
+1. **Trigger**: A Git push to `master` (or a designated staging branch) triggers Cloud Build.
+2. **Test**: Cloud Build runs `vitest` unit tests and any content transformation verifications.
+3. **Build**: Docker images are constructed for both `frontend/Dockerfile` and `backend/Dockerfile`.
+4. **Registry**: Immutable container images are pushed to Google Artifact Registry.
+5. **Deploy**: Cloud Build executes the deployment to Cloud Run/GKE, automatically linking the necessary IAM service accounts and Secret Manager references.
+
+*See `docs/deployment_gcp.md` for the complete step-by-step CLI setup guide.*
 
 ---
 
@@ -121,18 +147,19 @@ laymanlanguage/
 ├── backend/
 │   ├── api/               # FastAPI route handlers
 │   ├── core/              # Auth, logging utilities
-│   ├── llm/               # LLM provider adapters (Anthropic, Gemini, OpenAI)
+│   ├── llm/               # LLM provider adapters
 │   ├── orchestrator/      # Research orchestration agent
-│   ├── storage/           # Workspace, profile, user managers (SQLite)
+│   ├── storage/           # Database managers
 │   └── main.py            # Application entry point
 ├── frontend/
 │   ├── src/
 │   │   ├── app/           # Next.js App Router pages
-│   │   ├── api/           # API client and type definitions
-│   │   ├── components/    # UI components (Task, Synthesis, Profile, Orchestration)
+│   │   ├── api/           # API client and Next.js server endpoints
+│   │   ├── components/    # React components
+│   │   ├── lib/           # Content transformers and utility functions
 │   │   └── providers/     # Auth and Query providers
-│   └── public/            # Static assets (favicon, logo)
-└── docs/                  # Technical documentation (gitignored deployment configs)
+│   └── public/            # Static assets
+└── docs/                  # Technical documentation and deployment guides
 ```
 
 ---
