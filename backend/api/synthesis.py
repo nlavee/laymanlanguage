@@ -19,9 +19,14 @@ router = APIRouter(prefix="/api/synthesis", tags=["synthesis"])
 
 @router.get("/{workspace_id}", response_model=SynthesisResponse)
 async def synthesize_results(workspace_id: str, current_user: dict = Depends(get_current_user)):
-    # 2. Fetch Workspace Domains for targeted deep dives
+    # Verify workspace belongs to user OR is anonymous
     ws = workspace_manager.get_workspace(workspace_id)
-    if not ws or ws.get("user_id") != current_user["username"]:
+    if not ws:
+         from fastapi import HTTPException
+         raise HTTPException(status_code=404, detail="Workspace not found")
+         
+    owner_id = ws.get("user_id")
+    if owner_id and owner_id != current_user["username"]:
          from fastapi import HTTPException
          raise HTTPException(status_code=403, detail="Unauthorized")
          
@@ -30,8 +35,8 @@ async def synthesize_results(workspace_id: str, current_user: dict = Depends(get
     data_context = "\n".join([d.get('content', '') for d in docs])
     domains = ws.get("domains", []) if ws else []
     
-    # 2b. Instantiate the correct LLM
-    model_id = ws.get("orchestrator_model", "claude-sonnet-4-5") if ws else "claude-sonnet-4-5"
+    # 2b. Instantiate the correct LLM from synthesis_model
+    model_id = ws.get("synthesis_model", "claude-sonnet-4-6") if ws else "claude-sonnet-4-6"
     if "claude" in model_id.lower():
         llm = AnthropicProvider(model_name=model_id)
     elif "gpt" in model_id.lower() or "o1" in model_id.lower() or "o3" in model_id.lower():

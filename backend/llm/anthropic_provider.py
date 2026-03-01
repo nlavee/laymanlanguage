@@ -29,17 +29,35 @@ class AnthropicProvider(LLMProvider):
         base_client = anthropic.AsyncAnthropic(api_key=key)
         # Patch with instructor to support Pydantic response_model easily
         self.client = instructor.from_anthropic(base_client)
-        self.model_name = model_name
+        
+        # Model Mapping for layman/placeholders
+        self.model_mapping = {
+            "claude-haiku-4-5-20251001": "claude-3-haiku-20240307",
+            "claude-sonnet-4-6": "claude-3-haiku-20240307",
+            "claude-haiku-4-5": "claude-3-haiku-20240307",
+            "claude-sonnet-4-5": "claude-3-haiku-20240307",
+            "claude-haiku-4-6": "claude-3-haiku-20240307",
+        }
+        self.model_name = self.model_mapping.get(model_name, model_name)
 
     async def generate_json(self, messages: List[Dict[str, str]], response_model: type[BaseModel]) -> BaseModel:
         # Instructor handles the Pydantic structured output mapping
-        resp = await self.client.messages.create(
-            model=self.model_name,
-            max_tokens=4096,
-            messages=messages,
-            response_model=response_model
-        )
-        return resp
+        import asyncio
+        try:
+            resp = await asyncio.wait_for(
+                self.client.messages.create(
+                    model=self.model_name,
+                    max_tokens=4096,
+                    messages=messages,
+                    response_model=response_model
+                ),
+                timeout=45.0 # Reasonable timeout for a single LLM call
+            )
+            return resp
+        except asyncio.TimeoutError:
+            raise ValueError(f"Anthropic LLM call timed out for model {self.model_name}")
+        except Exception as e:
+            raise ValueError(f"Anthropic LLM call failed: {str(e)}")
 
     async def stream_response(self, messages: List[Dict[str, str]]) -> AsyncGenerator[str, None]:
         # Use underlying anthropic client for raw text streaming

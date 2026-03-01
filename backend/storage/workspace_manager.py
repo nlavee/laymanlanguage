@@ -19,13 +19,16 @@ class WorkspaceManager:
                 "user_id": str,
                 "created_at": str,
                 "user_query": str,
-                "orchestrator_model": str
+                "orchestrator_model": str,
+                "synthesis_model": str
             }, pk="id")
             self.db["workspaces"].create_index(["user_id"])
         else:
             # Ensure orchestrator_model column exists
             if "orchestrator_model" not in self.db["workspaces"].columns_dict:
                 self.db["workspaces"].add_column("orchestrator_model", str)
+            if "synthesis_model" not in self.db["workspaces"].columns_dict:
+                self.db["workspaces"].add_column("synthesis_model", str)
             if "user_id" not in self.db["workspaces"].columns_dict:
                 self.db["workspaces"].add_column("user_id", str)
             
@@ -41,7 +44,7 @@ class WorkspaceManager:
                 ("workspace_id", "workspaces", "id")
             ])
 
-    def create_workspace(self, user_id: Optional[str], user_query: str, domains: List[DomainExpansion]) -> str:
+    def create_workspace(self, user_id: Optional[str], user_query: str, domains: List[DomainExpansion], synthesis_model: str = "claude-sonnet-4-6") -> str:
         from datetime import datetime, timezone
         ws_id = str(uuid.uuid4())
         
@@ -50,7 +53,8 @@ class WorkspaceManager:
             "user_id": user_id,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "user_query": user_query,
-            "orchestrator_model": "gemini-3-pro-preview" # Default
+            "orchestrator_model": "claude-haiku-4-5-20251001",
+            "synthesis_model": synthesis_model
         })
         
         for d in domains:

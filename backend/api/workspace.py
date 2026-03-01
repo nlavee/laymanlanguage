@@ -17,17 +17,16 @@ from backend.llm.openai_provider import OpenAIProvider
 
 class TaskIngestionRequest(BaseModel):
     query: str
-    model_id: str = "claude-haiku-4-5"
+    model_id: str = "claude-haiku-4-5-20251001"
 
 @router.post("/ingest")
 async def ingest_task(req: TaskIngestionRequest, current_user: Optional[dict] = Depends(get_optional_current_user)):
-    # Determine the LLM Provider based on user selection
-    if "claude" in req.model_id.lower():
-        llm = AnthropicProvider(model_name=req.model_id)
-    elif "gpt" in req.model_id.lower() or "o1" in req.model_id.lower() or "o3" in req.model_id.lower():
-        llm = OpenAIProvider(model_name=req.model_id)
-    else:
-        llm = GeminiProvider(model_name=req.model_id)
+    # 1. Use req.model_id (user selection) for Synthesis Model
+    # 2. Use Claude 4.5 Haiku for initial ingestion/orchestration
+    orchestration_model = "claude-haiku-4-5-20251001"
+    
+    # Instantiate LLM for domain expansion (part of orchestration)
+    llm = AnthropicProvider(model_name=orchestration_model)
 
     # 1. Load active user profile context
     username = current_user["username"] if current_user else None
@@ -45,16 +44,21 @@ async def ingest_task(req: TaskIngestionRequest, current_user: Optional[dict] = 
     
     response = await llm.generate_json(messages, DomainExpansionResponse)
     
-    # Save the selected orchestrator model down into the SQLite workspace state
-    ws_id = workspace_manager.create_workspace(username, req.query, response.domains)
-    workspace_manager.update_workspace(ws_id, {"orchestrator_model": req.model_id})
+    # Save workspace with specific orchestration and synthesis models
+    ws_id = workspace_manager.create_workspace(
+        user_id=username, 
+        user_query=req.query, 
+        domains=response.domains,
+        synthesis_model=req.model_id
+    )
     
     return {
         "status": "success",
         "workspace_id": ws_id,
         "query": req.query,
         "domains": [d.model_dump() for d in response.domains],
-        "orchestrator_model": req.model_id,
+        "orchestrator_model": orchestration_model,
+        "synthesis_model": req.model_id,
         "is_anonymous": username is None
     }
 
@@ -79,5 +83,6 @@ def get_workspace(workspace_id: str, current_user: Optional[dict] = Depends(get_
         "workspace_id": ws["id"],
         "query": ws.get("user_query", ""),
         "domains": ws.get("domains", []),
-        "orchestrator_model": ws.get("orchestrator_model", "gemini-3-pro-preview")
+        "orchestrator_model": ws.get("orchestrator_model", "claude-haiku-4-5-20251001"),
+        "synthesis_model": ws.get("synthesis_model", "claude-sonnet-4-6")
     }}

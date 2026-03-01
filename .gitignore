@@ -4,6 +4,8 @@ __pycache__/
 .env
 .DS_Store
 backend/__pycache__/
+docs/deployment*
+docs/gcp*
 frontend/.next/
 frontend/node_modules/
 .env.credentials

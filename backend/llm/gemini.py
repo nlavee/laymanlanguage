@@ -27,7 +27,12 @@ class GeminiProvider(LLMProvider):
         if not key:
             raise ValueError(f"Gemini API Key not found. Tried loading .env from {env_path}")
         self.client = genai.Client(api_key=key)
-        self.model_name = model_name
+        
+        # Model Mapping for layman/placeholders
+        self.model_mapping = {
+            "gemini-3-pro": "gemini-3-pro-preview",
+        }
+        self.model_name = self.model_mapping.get(model_name, model_name)
 
     async def generate_json(self, messages: List[Dict[str, str]], response_model: type[BaseModel]) -> BaseModel:
         contents = self._convert_messages(messages)

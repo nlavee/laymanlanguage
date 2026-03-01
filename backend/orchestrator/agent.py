@@ -3,11 +3,12 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from backend.core.logger import stream_logger
 from backend.storage.workspace_manager import workspace_manager
 from backend.storage.knowledgebase import knowledge_base
+from backend.llm.anthropic_provider import AnthropicProvider
 from backend.llm.gemini import GeminiProvider
 
 class Orchestrator:
     def __init__(self):
-        self.llm = GeminiProvider()
+        self.llm = AnthropicProvider(model_name="claude-haiku-4-5-20251001")
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def _execute_search_tool(self, session_id: str, domain_id: str, query: str):
