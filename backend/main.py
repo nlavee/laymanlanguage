@@ -20,7 +20,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(profile.router, dependencies=[Depends(get_current_user)])
-app.include_router(workspace.router, dependencies=[Depends(get_current_user)])
+app.include_router(workspace.router)
 app.include_router(orchestrator.router, dependencies=[Depends(get_current_user)])
 app.include_router(synthesis.router, dependencies=[Depends(get_current_user)])
 

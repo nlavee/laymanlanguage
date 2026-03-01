@@ -36,7 +36,12 @@ async def signup(user: UserSignup):
 
 @router.post("/login", response_model=Token)
 async def login(credentials: UserLogin):
+    print(f"DEBUG: Login attempt for user: {credentials.username}")
     user = user_manager.get_user_by_username(credentials.username)
+    if not user:
+        print(f"DEBUG: User not found: {credentials.username}")
+    else:
+        print(f"DEBUG: User found, checking password for {credentials.username}")
     if not user or not verify_password(credentials.password, user["password_hash"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

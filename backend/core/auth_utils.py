@@ -14,6 +14,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 1 week
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
+optional_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False)
 
 class TokenData(BaseModel):
     username: Optional[str] = None
@@ -57,3 +58,16 @@ async def get_current_user(username: str = Depends(get_current_user_token)):
     if not user["is_verified"]:
         raise HTTPException(status_code=403, detail="User not verified")
     return user
+
+async def get_optional_current_user(token: Optional[str] = Depends(optional_oauth2_scheme)) -> Optional[dict]:
+    if not token:
+        return None
+    try:
+        from backend.storage.user_manager import user_manager
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username:
+            return user_manager.get_user_by_username(username)
+    except Exception:
+        pass
+    return None

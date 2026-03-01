@@ -1,3 +1,7 @@
+from fastapi import APIRouter, Depends
+from backend.models.profile import ProfileQuestionnaireResponse, ProfileSynthesisResponse
+from backend.llm.gemini import GeminiProvider
+from backend.storage.profile_manager import profile_manager
 from backend.core.auth_utils import get_current_user
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])

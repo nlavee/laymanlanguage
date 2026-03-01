@@ -20,7 +20,12 @@ class ProfileManager:
         with open(path, "w") as f:
             f.write(content)
 
-    def load_profile(self, user_id: str) -> Optional[Dict[str, Any]]:
+    def load_profile(self, user_id: Optional[str]) -> Optional[Dict[str, Any]]:
+        if not user_id:
+            return {
+                "metadata": {"traits": {"experience": "Strategic Architecture", "focus": "Enterprise"}}, 
+                "body": "A technical architect focused on modernizing legacy systems and designing scalable, cloud-native infrastructures."
+            }
         path = self.get_profile_path(user_id)
         if not os.path.exists(path):
             return None

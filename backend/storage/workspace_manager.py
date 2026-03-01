@@ -41,7 +41,7 @@ class WorkspaceManager:
                 ("workspace_id", "workspaces", "id")
             ])
 
-    def create_workspace(self, user_id: str, user_query: str, domains: List[DomainExpansion]) -> str:
+    def create_workspace(self, user_id: Optional[str], user_query: str, domains: List[DomainExpansion]) -> str:
         from datetime import datetime, timezone
         ws_id = str(uuid.uuid4())
         
@@ -79,7 +79,9 @@ class WorkspaceManager:
         except Exception:
             return None
 
-    def list_workspaces(self, user_id: str) -> List[Dict[str, Any]]:
+    def list_workspaces(self, user_id: Optional[str]) -> List[Dict[str, Any]]:
+        if not user_id:
+            return []
         return list(self.db["workspaces"].rows_where("user_id = ?", [user_id], order_by="created_at desc"))
 
 workspace_manager = WorkspaceManager()

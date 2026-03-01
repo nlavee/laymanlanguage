@@ -31,7 +31,7 @@ async def synthesize_results(workspace_id: str, current_user: dict = Depends(get
     domains = ws.get("domains", []) if ws else []
     
     # 2b. Instantiate the correct LLM
-    model_id = ws.get("orchestrator_model", "gemini-3-pro-preview") if ws else "gemini-3-pro-preview"
+    model_id = ws.get("orchestrator_model", "claude-sonnet-4-5") if ws else "claude-sonnet-4-5"
     if "claude" in model_id.lower():
         llm = AnthropicProvider(model_name=model_id)
     elif "gpt" in model_id.lower() or "o1" in model_id.lower() or "o3" in model_id.lower():
