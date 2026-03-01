@@ -22,6 +22,10 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "layman.ai (alpha) | Enterprise LLM Strategy",
   description: "AI architecture recommendations translated for the C-Suite.",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/logo.png",
+  }
 };
 
 export default function RootLayout({
