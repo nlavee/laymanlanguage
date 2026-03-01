@@ -1,6 +1,8 @@
 venv/
 __pycache__/
 *.pyc
+*.log
+brain/*.db
 .env
 .DS_Store
 backend/__pycache__/
