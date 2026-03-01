@@ -36,7 +36,7 @@ export default function SignupPage() {
         className="max-w-md w-full"
       >
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold tracking-tight mb-2">layman.ai</h1>
+          <h1 className="text-4xl font-bold tracking-tight mb-2">layman.vuishere.com</h1>
           <p className="text-neutral-500">Create your account to get started</p>
         </div>
 

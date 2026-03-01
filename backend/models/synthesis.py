@@ -24,3 +24,4 @@ class SynthesisResponse(BaseModel):
     pareto_data: List[ParetoDataPoint]
     historical_timeline: List[TimelineEvent] = Field(description="Historical breakthroughs in this domain")
     implementation_timeline: List[TimelineEvent] = Field(description="Projected roadmap implementation")
+    appendix: str = Field(default="", description="Deep dive research documentation")

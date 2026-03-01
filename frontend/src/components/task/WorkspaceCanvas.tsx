@@ -28,6 +28,10 @@ export default function WorkspaceCanvas({ workspace, onReset }: { workspace: Wor
         setIsOrchestrating(true);
         setLogStatus("running");
     },
+    onError: (error) => {
+        console.error("Failed to start orchestration:", error);
+        alert("Failed to start orchestration. Please check the console for more details.");
+    }
   });
 
   useEffect(() => {
@@ -68,7 +72,7 @@ export default function WorkspaceCanvas({ workspace, onReset }: { workspace: Wor
                <h2 className="text-3xl font-bold flex items-center gap-3">Research Outcome</h2>
                <button onClick={onReset} className="text-neutral-500 hover:text-white transition-colors text-sm">Start Over</button>
            </div>
-           <SynthesisReport workspaceId={workspace.workspace_id} />
+           <SynthesisReport workspaceId={workspace.workspace_id} query={workspace.query} />
        </div>
 
        {/* ---------------- RESEARCH FRAMEWORK STATE ---------------- */}
@@ -78,7 +82,7 @@ export default function WorkspaceCanvas({ workspace, onReset }: { workspace: Wor
                    <h2 className="text-3xl font-bold flex items-center gap-3">
                        <LayoutGrid className="text-blue-500" /> Research Framework
                    </h2>
-                   <p className="text-neutral-400 mt-2 text-[15px]">Based on your persona, layman.ai will investigate the following technical domains.</p>
+                   <p className="text-neutral-400 mt-2 text-[15px]">Based on your persona, layman.vuishere.com will investigate the following technical domains.</p>
                </div>
                
                <button 

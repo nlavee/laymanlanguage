@@ -12,7 +12,7 @@ from backend.core.logger import stream_logger
 from backend.api import profile, workspace, orchestrator, synthesis, auth
 from backend.core.auth_utils import get_current_user
 
-app = FastAPI(title="layman.ai API")
+app = FastAPI(title="layman.vuishere.com API")
 
 app.add_middleware(
     CORSMiddleware,

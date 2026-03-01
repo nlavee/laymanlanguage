@@ -37,7 +37,7 @@ export default function TaskInput({ onProfileReset }: { onProfileReset: () => vo
             Architecture Strategy
         </h1>
         <p className="text-[17px] text-neutral-400 max-w-2xl mx-auto">
-            Describe your objective. layman.ai will break it down into explicit technical domains and source state-of-the-art models suited for your environment.
+            Describe your objective. layman.vuishere.com will break it down into explicit technical domains and source state-of-the-art models suited for your environment.
         </p>
       </div>
 

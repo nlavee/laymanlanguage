@@ -20,7 +20,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "layman.ai (alpha) | Enterprise LLM Strategy",
+  title: "layman.vuishere.com (alpha) | Enterprise LLM Strategy",
   description: "AI architecture recommendations translated for the C-Suite.",
   icons: {
     icon: "/favicon.png",

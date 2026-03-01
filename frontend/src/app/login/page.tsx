@@ -38,7 +38,7 @@ export default function LoginPage() {
         className="max-w-md w-full"
       >
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold tracking-tight mb-2">layman.ai</h1>
+          <h1 className="text-4xl font-bold tracking-tight mb-2">layman.vuishere.com</h1>
           <p className="text-neutral-500">Sign in to access Enterprise LLM Strategy</p>
         </div>
 

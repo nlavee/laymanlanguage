@@ -41,7 +41,7 @@ export default function Home() {
       <header className="w-full border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-[1200px] mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold tracking-tight text-white font-[family-name:var(--font-outfit)]">layman.ai</span>
+            <span className="text-xl font-bold tracking-tight text-white font-[family-name:var(--font-outfit)]">layman.vuishere.com</span>
             <span className="text-[10px] font-mono text-neutral-500 bg-white/5 px-1.5 py-0.5 rounded border border-white/10 mt-1 uppercase tracking-widest font-[family-name:var(--font-geist-mono)]">alpha</span>
           </div>
           <div className="flex items-center gap-4">
@@ -90,7 +90,7 @@ export default function Home() {
       <footer className="w-full border-t border-neutral-800/50 bg-[#0A0A0A] py-8 text-neutral-400 mt-auto">
         <div className="max-w-[1200px] mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
           <div className="flex gap-2 items-center">
-            <span className="font-bold tracking-tight text-white font-[family-name:var(--font-outfit)]">layman.ai</span>
+            <span className="font-bold tracking-tight text-white font-[family-name:var(--font-outfit)]">layman.vuishere.com</span>
             <span className="text-[10px] font-mono text-neutral-500 font-[family-name:var(--font-geist-mono)]">(alpha)</span>
             <span className="ml-2 text-neutral-600">— Enterprise Architecture Intelligence</span>
           </div>

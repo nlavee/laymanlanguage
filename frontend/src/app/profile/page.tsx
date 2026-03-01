@@ -52,7 +52,7 @@ export default function ProfilePage() {
         <div className="max-w-[1200px] mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <span className="text-xl font-bold tracking-tight text-white font-[family-name:var(--font-outfit)]">layman.ai</span>
+              <span className="text-xl font-bold tracking-tight text-white font-[family-name:var(--font-outfit)]">layman.vuishere.com</span>
               <span className="text-[10px] font-mono text-neutral-500 bg-white/5 px-1.5 py-0.5 rounded border border-white/10 mt-1 uppercase tracking-widest font-[family-name:var(--font-geist-mono)]">alpha</span>
             </Link>
             <span className="text-neutral-700">/</span>

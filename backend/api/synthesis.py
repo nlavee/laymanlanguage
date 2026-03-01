@@ -78,4 +78,5 @@ async def synthesize_results(workspace_id: str, current_user: dict = Depends(get
     ]
     
     response = await llm.generate_json(messages, SynthesisResponse)
+    response.appendix = combined_deep_dives
     return response

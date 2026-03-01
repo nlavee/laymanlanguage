@@ -4,6 +4,34 @@ export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000',
 });
 
+apiClient.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
+apiClient.interceptors.response.use((response) => {
+  return response;
+}, (error) => {
+  if (error.response && error.response.status === 401) {
+    if (typeof window !== 'undefined') {
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login' && currentPath !== '/signup') {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+        window.location.href = '/login';
+      }
+    }
+  }
+  return Promise.reject(error);
+});
+
 export interface QuestionOption {
   id: string;
   text: string;
@@ -76,7 +104,7 @@ export const ingestTask = async (query: string, model_id: string): Promise<Works
 
 export const getWorkspace = async (workspaceId: string): Promise<WorkspaceResponse> => {
     const res = await apiClient.get(`/api/workspace/${workspaceId}`);
-    return res.data.workspace;
+    return res.data.workspace ?? null;
 }
 
 export const startOrchestration = async (workspaceId: string): Promise<unknown> => {
@@ -110,9 +138,10 @@ export interface SynthesisResponse {
     pareto_data: ParetoDataPoint[];
     historical_timeline: TimelineEvent[];
     implementation_timeline: TimelineEvent[];
+    appendix: string;
 }
 
 export const getSynthesis = async (workspaceId: string): Promise<SynthesisResponse> => {
     const res = await apiClient.get(`/api/synthesis/${workspaceId}`);
-    return res.data;
+    return res.data ?? null;
 }

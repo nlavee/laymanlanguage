@@ -1,6 +1,6 @@
 <div align="center">
 
-# layman.ai
+# layman.vuishere.com
 
 **Enterprise-Grade AI Architectural Research & Strategy Platform**
 
@@ -17,7 +17,7 @@
 
 ## Overview
 
-**layman.ai** is an AI-powered research orchestration platform that takes a high-level technical objective and autonomously expands it into a multi-domain research strategy. It performs deep-dive analysis across relevant technology domains and synthesizes the findings into a ranked, Pareto-optimal recommendation report — tailored to the user's technical background.
+**layman.vuishere.com** is an AI-powered research orchestration platform that takes a high-level technical objective and autonomously expands it into a multi-domain research strategy. It performs deep-dive analysis across relevant technology domains and synthesizes the findings into a ranked, Pareto-optimal recommendation report — tailored to the user's technical background.
 
 The platform is designed for **engineering leads, CTOs, and enterprise architects** who need fast, structured, and defensible technology decisions.
 
@@ -147,5 +147,5 @@ Built with ❤️ by **[vuishere.com](https://www.vuishere.com)**
 ---
 
 <div align="center">
-  <sub>layman.ai — Making technical complexity accessible.</sub>
+  <sub>layman.vuishere.com — Making technical complexity accessible.</sub>
 </div>
