@@ -19,6 +19,7 @@ async def startup_event():
     # Auto-seed the database if no users exist
     from backend.storage.user_manager import user_manager
     from backend.core.auth_utils import get_password_hash
+    from backend.core.config import settings
     import secrets
     
     # Check if we have any users
@@ -29,18 +30,25 @@ async def startup_event():
         
     if not users:
         print("Empty database detected. Seeding production accounts...")
+        
+        # Priority: SEED_CREDENTIALS env var (format "user:pass,user:pass")
+        seed_data = {}
+        if settings.SEED_CREDENTIALS:
+            pairs = settings.SEED_CREDENTIALS.split(",")
+            for pair in pairs:
+                if ":" in pair:
+                    u, p = pair.split(":", 1)
+                    seed_data[u] = p
+
         users_to_create = [
             ("admin", "admin@layman.vuishere.com"),
             ("architect", "architect@layman.vuishere.com"),
             ("lead", "lead@layman.vuishere.com")
         ]
         
-        # In a real production app, you might want to fetch these from secrets
-        # For now, we generate random ones and log them (Cloud Run logs are secure)
         for username, email in users_to_create:
-            # We use a fixed password for the first 'admin' for easy access if requested,
-            # but user requested non-obvious ones.
-            password = secrets.token_urlsafe(16)
+            # Use deterministic password if provided, else random
+            password = seed_data.get(username, secrets.token_urlsafe(16))
             hashed = get_password_hash(password)
             user_manager.create_user(
                 username=username,
@@ -48,7 +56,11 @@ async def startup_event():
                 password_hash=hashed,
                 is_verified=True
             )
-            print(f"CREATED USER: {username} | PASS: {password}")
+            # Log password only if it was NOT deterministic (for security)
+            if username not in seed_data:
+                print(f"CREATED USER: {username} | RANDOM PASS: {password}")
+            else:
+                print(f"CREATED USER: {username} | DETERMINISTIC PASS: [REDACTED]")
     
 app.add_middleware(
     CORSMiddleware,

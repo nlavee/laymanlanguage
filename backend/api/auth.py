@@ -1,9 +1,18 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel, EmailStr
 from typing import Optional
+import jwt
 
 from backend.storage.user_manager import user_manager
-from backend.core.auth_utils import verify_password, get_password_hash, create_access_token
+from backend.core.auth_utils import (
+    verify_password, 
+    get_password_hash, 
+    create_access_token, 
+    create_refresh_token, 
+    get_current_user,
+    SECRET_KEY,
+    ALGORITHM
+)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -18,7 +27,11 @@ class UserSignup(BaseModel):
 
 class Token(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
 
 @router.post("/signup")
 async def signup(user: UserSignup):
@@ -36,12 +49,8 @@ async def signup(user: UserSignup):
 
 @router.post("/login", response_model=Token)
 async def login(credentials: UserLogin):
-    print(f"DEBUG: Login attempt for user: {credentials.username}")
     user = user_manager.get_user_by_username(credentials.username)
-    if not user:
-        print(f"DEBUG: User not found: {credentials.username}")
-    else:
-        print(f"DEBUG: User found, checking password for {credentials.username}")
+    
     if not user or not verify_password(credentials.password, user["password_hash"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -56,9 +65,43 @@ async def login(credentials: UserLogin):
         )
 
     access_token = create_access_token(data={"sub": user["username"]})
-    return {"access_token": access_token, "token_type": "bearer"}
+    refresh_token = create_refresh_token(data={"sub": user["username"]})
+    return {
+        "access_token": access_token, 
+        "refresh_token": refresh_token,
+        "token_type": "bearer"
+    }
+
+@router.post("/refresh", response_model=Token)
+async def refresh(request: RefreshTokenRequest):
+    try:
+        payload = jwt.decode(request.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+            
+        user = user_manager.get_user_by_username(username)
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+            
+        access_token = create_access_token(data={"sub": user["username"]})
+        # Note: We keep the same refresh token, or rotate it. 
+        # For simplicity, we just return the new access token and the same refresh token.
+        return {
+            "access_token": access_token, 
+            "refresh_token": request.refresh_token,
+            "token_type": "bearer"
+        }
+    except Exception:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
 
 @router.get("/me")
-async def read_users_me(current_user: str = Depends(create_access_token)):
-    # This is a bit of a placeholder, actual implementation should use get_current_user dependency
-    return {"username": current_user}
+async def read_users_me(current_user: dict = Depends(get_current_user)):
+    return {
+        "username": current_user["username"],
+        "email": current_user["email"],
+        "is_verified": current_user["is_verified"]
+    }
