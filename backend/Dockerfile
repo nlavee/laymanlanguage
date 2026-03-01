@@ -10,6 +10,10 @@ RUN apt-get update && apt-get install -y \
     psmisc \
     && rm -rf /var/lib/apt/lists/*
 
+# Create and use virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 # Copy requirements and install
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -23,10 +27,9 @@ COPY backend/ /app/backend/
 # Environment variables
 ENV PORT=8080
 ENV PYTHONPATH=/app
-ENV JWT_SECRET="change-me-in-production"
 
 # Expose the port
 EXPOSE 8080
 
-# Run uvicorn
-CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT}"]
+# Run uvicorn using the venv's python
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8080"]

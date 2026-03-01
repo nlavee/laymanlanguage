@@ -1,7 +1,5 @@
 steps:
   # 1. Build the backend Docker image
-  # We now pass brain/ existence as an optional thing, 
-  # or we just let the backend seed itself if empty.
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-f', 'backend/Dockerfile', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:latest', '.']
     id: 'build-backend'
@@ -23,7 +21,7 @@ steps:
           --platform managed \
           --allow-unauthenticated \
           --port 8080 \
-          --set-secrets="JWT_SECRET=JWT_SECRET:latest,CLAUDE_API_KEY=CLAUDE_API_KEY:latest,GOOGLE_API_KEY=GOOGLE_API_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" \
+          --set-secrets="JWT_SECRET=JWT_SECRET:latest,CLAUDE_API_KEY=CLAUDE_API_KEY:latest,GOOGLE_API_KEY=GOOGLE_API_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest,SEED_CREDENTIALS=SEED_CREDENTIALS:latest" \
           --format="value(status.url)" > /workspace/backend_url.txt
     id: 'deploy-backend'
 

@@ -29,7 +29,7 @@ else
 fi
 
 # 3. Create Secrets (if they don't exist)
-SECRETS=("JWT_SECRET" "CLAUDE_API_KEY" "GOOGLE_API_KEY" "OPENAI_API_KEY" "PRESENTON_API_KEY")
+SECRETS=("JWT_SECRET" "CLAUDE_API_KEY" "GOOGLE_API_KEY" "OPENAI_API_KEY" "PRESENTON_API_KEY" "SEED_CREDENTIALS")
 
 echo "Setting up Secret Manager..."
 for SECRET in "${SECRETS[@]}"; do
