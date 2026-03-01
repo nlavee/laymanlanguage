@@ -4,26 +4,26 @@ FROM python:3.12-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies (including fuser/psmisc for housekeeping)
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     psmisc \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY . .
-
-# Environment variables (Defaults, override in Cloud Run)
-ENV PORT=8080
-ENV PYTHONPATH=/app
-ENV JWT_SECRET="change-me-in-production"
 
 # Create persistence directory
 RUN mkdir -p /app/brain
+
+# Copy backend application code into a subdirectory named 'backend'
+COPY backend/ /app/backend/
+
+# Environment variables
+ENV PORT=8080
+ENV PYTHONPATH=/app
+ENV JWT_SECRET="change-me-in-production"
 
 # Expose the port
 EXPOSE 8080

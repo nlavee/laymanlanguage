@@ -1,46 +1,48 @@
 steps:
   # 1. Build the backend Docker image
+  # We now pass brain/ existence as an optional thing, 
+  # or we just let the backend seed itself if empty.
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:$COMMIT_SHA', './backend']
+    args: ['build', '-f', 'backend/Dockerfile', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:latest', '.']
     id: 'build-backend'
 
   # 2. Push the backend Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:$COMMIT_SHA']
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:latest']
     id: 'push-backend'
 
-  # 3. Deploy the backend to Cloud Run
+  # 3. Deploy the backend to Cloud Run to get the URL
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        gcloud run deploy layman-backend 
-          --image us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:$COMMIT_SHA 
-          --region us-central1 
-          --platform managed 
-          --allow-unauthenticated 
-          --set-secrets="JWT_SECRET=JWT_SECRET:latest,CLAUDE_API_KEY=CLAUDE_API_KEY:latest,GOOGLE_API_KEY=GOOGLE_API_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" 
+        gcloud run deploy layman-backend \
+          --image us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:latest \
+          --region us-central1 \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 8080 \
+          --set-secrets="JWT_SECRET=JWT_SECRET:latest,CLAUDE_API_KEY=CLAUDE_API_KEY:latest,GOOGLE_API_KEY=GOOGLE_API_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest" \
           --format="value(status.url)" > /workspace/backend_url.txt
     id: 'deploy-backend'
 
-  # 4. Build the frontend Docker image (injecting backend URL as build arg)
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  # 4. Build the frontend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
         export BACKEND_URL=$(cat /workspace/backend_url.txt)
-        echo "Building frontend with BACKEND_URL=$BACKEND_URL"
-        docker build --build-arg NEXT_PUBLIC_API_URL=$BACKEND_URL 
-          -t us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/frontend:$COMMIT_SHA 
+        docker build --build-arg NEXT_PUBLIC_API_URL=$$BACKEND_URL \
+          -t us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/frontend:latest \
           ./frontend
     id: 'build-frontend'
     waitFor: ['deploy-backend']
 
   # 5. Push the frontend Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/frontend:$COMMIT_SHA']
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/frontend:latest']
     id: 'push-frontend'
     waitFor: ['build-frontend']
 
@@ -52,7 +54,7 @@ steps:
       - 'deploy'
       - 'layman-frontend'
       - '--image'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/frontend:$COMMIT_SHA'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/frontend:latest'
       - '--region'
       - 'us-central1'
       - '--platform'
@@ -63,8 +65,8 @@ steps:
     waitFor: ['push-frontend']
 
 images:
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:$COMMIT_SHA'
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/frontend:$COMMIT_SHA'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/backend:latest'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/layman-repo/frontend:latest'
 
 options:
   logging: CLOUD_LOGGING_ONLY
