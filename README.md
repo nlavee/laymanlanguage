@@ -1,68 +1,151 @@
-# 🌐 layman.ai (alpha)
+<div align="center">
 
-### **Enterprise-Grade AI Architectural Reasoning**
+# layman.ai
 
-**layman.ai** is a sophisticated research and orchestration platform designed to translate high-level technical objectives into actionable, multi-domain strategies. By leveraging state-of-the-art Large Language Models (LLMs), it automates the process of domain expansion, deep-dive research, and architectural synthesis.
+**Enterprise-Grade AI Architectural Research & Strategy Platform**
 
----
+[![Alpha](https://img.shields.io/badge/status-alpha-orange)](https://github.com/nlavee/laymanlanguage)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Next.js](https://img.shields.io/badge/frontend-Next.js%2015-black)](https://nextjs.org)
+[![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688)](https://fastapi.tiangolo.com)
 
-## 🚀 Key Features
+*Translating technical complexity into actionable enterprise strategy.*
 
-- **Multi-Model Orchestration**: Leverages **Claude 4.5 Haiku** for lighting-fast task ingestion and domain planning.
-- **Deep Research Specialist**: Utilizes **Claude 4.6 Sonnet** (and other premium models like Gemini 3 Pro) for exhaustive technical deep-dives.
-- **Pareto-Optimal Analysis**: Visualizes trade-offs between capability, cost, and complexity using dynamic Pareto frontier mapping.
-- **Unified Timeline Generation**: Synthesizes historical context and implementation roadmaps into a cohesive technical narrative.
-- **Real-time Activity Streaming**: Watch the AI "think" through Server-Sent Events (SSE) that stream orchestrator logs directly to the UI.
-
----
-
-## 🛠️ Technical Stack
-
-### **Frontend**
-- **Framework**: Next.js 15 (App Router)
-- **Styling**: Tailwind CSS & Framer Motion (Glassmorphism & Micro-animations)
-- **State Management**: TanStack Query (React Query)
-- **Visualization**: Recharts
-
-### **Backend**
-- **Framework**: FastAPI (Python 3.12)
-- **LLM Integration**: Anthropic SDK, OpenAI SDK, Google Generative AI (Gemini)
-- **Database**: SQLite (managed via `sqlite-utils`)
-- **Authentication**: JWT (HS256)
+</div>
 
 ---
 
-## 📦 Local Development
+## Overview
 
-### **Backend Setup**
-1. Navigate to `backend/`
-2. Create and active a virtual environment: `python -m venv venv && source venv/bin/activate`
-3. Install dependencies: `pip install -r requirements.txt`
-4. Start the server: `PYTHONPATH=. python backend/main.py`
+**layman.ai** is an AI-powered research orchestration platform that takes a high-level technical objective and autonomously expands it into a multi-domain research strategy. It performs deep-dive analysis across relevant technology domains and synthesizes the findings into a ranked, Pareto-optimal recommendation report — tailored to the user's technical background.
 
-### **Frontend Setup**
-1. Navigate to `frontend/`
-2. Install dependencies: `npm install`
-3. Run development server: `npm run dev`
+The platform is designed for **engineering leads, CTOs, and enterprise architects** who need fast, structured, and defensible technology decisions.
 
 ---
 
-## ☁️ Deployment Strategy
+## How It Works
 
-The project is optimized for **Google Cloud Platform (GCP)**:
-- **Compute**: Cloud Run (Serverless)
-- **Persistence**: GCS Fuse mounting SQLite databases.
-- **Secrets**: Google Secret Manager for API keys and JWT secrets.
+```
+User Query → Domain Expansion → Parallel Research → Synthesis Report
+```
 
-Refer to `docs/deployment_gcp.md` for full instructions.
+1. **Ingest**: The user provides a high-level technical objective (e.g., *"Design a real-time ML inference platform at scale"*).
+2. **Orchestrate**: Claude Haiku autonomously expands the query into 3–5 research domains and generates targeted sub-queries.
+3. **Research**: Each domain is investigated in parallel by the AI research specialist, with real-time streaming logs.
+4. **Synthesize**: Claude Sonnet (or Gemini 3 Pro / GPT-5) synthesizes all findings into a ranked model comparison, Pareto frontier visualization, and implementation timeline.
+
+---
+
+## Key Features
+
+| Feature | Description |
+|---|---|
+| 🧠 **Multi-Model Orchestration** | Claude Haiku handles fast task planning; Claude Sonnet drives deep synthesis |
+| 📊 **Pareto Analysis** | Trade-off visualization across capability, cost, and complexity |
+| 📅 **Timeline Generation** | Historical context + forward-looking implementation roadmap |
+| ⚡ **Real-time Streaming** | Server-Sent Events (SSE) for live orchestrator activity logs |
+| 🔐 **Auth & Personalization** | JWT-secured accounts with configurable technical personas per user |
+| 🎨 **Premium UI** | Glassmorphism, micro-animations, and dark-mode-first design |
 
 ---
 
-## 👨‍💻 Author & Builder
+## Application Routes
 
-Built with ❤️ by **[vuishere.com](https://www.vuishere.com)**.
-
-For inquiries or private enterprise deployments, please contact the builder through the official website.
+| URL | Description |
+|---|---|
+| `/` | Main search interface — enter a research objective |
+| `/profile` | Configure your technical persona & background depth |
+| `/login` | Sign in to unlock full orchestration |
+| `/signup` | Create an account |
 
 ---
-*Generated by layman.ai — Making technical complexity accessible.*
+
+## Tech Stack
+
+**Frontend** · Next.js 15 (App Router) · TanStack Query · Framer Motion · Recharts · Tailwind CSS
+
+**Backend** · FastAPI · Python 3.12 · SQLite (`sqlite-utils`) · JWT (HS256)
+
+**LLM Providers** · Anthropic (Claude 4.5 Haiku / Claude 4.6 Sonnet) · Google Gemini 3 Pro · OpenAI GPT-5
+
+---
+
+## Local Development
+
+### Backend
+```bash
+cd backend
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+cd ..
+PYTHONPATH=. python backend/main.py
+# API running at http://localhost:8000
+# Interactive API docs at http://localhost:8000/docs
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+# App running at http://localhost:3000
+```
+
+### Environment Variables
+Create a `.env` file at the root:
+```env
+JWT_SECRET=your-secret-here
+CLAUDE_API_KEY=sk-ant-...
+GOOGLE_API_KEY=AIza...
+OPENAI_API_KEY=sk-...
+```
+
+---
+
+## Deployment
+
+The project is containerized and optimized for **Google Cloud Platform**:
+
+- **Compute**: Cloud Run (serverless, auto-scaling)
+- **Persistence**: GCS Fuse for SQLite database mounting
+- **Secrets**: Google Secret Manager for all API keys and JWT secrets
+
+See `docs/deployment_gcp.md` for the complete step-by-step guide.
+
+---
+
+## Project Structure
+
+```
+laymanlanguage/
+├── backend/
+│   ├── api/               # FastAPI route handlers
+│   ├── core/              # Auth, logging utilities
+│   ├── llm/               # LLM provider adapters (Anthropic, Gemini, OpenAI)
+│   ├── orchestrator/      # Research orchestration agent
+│   ├── storage/           # Workspace, profile, user managers (SQLite)
+│   └── main.py            # Application entry point
+├── frontend/
+│   ├── src/
+│   │   ├── app/           # Next.js App Router pages
+│   │   ├── api/           # API client and type definitions
+│   │   ├── components/    # UI components (Task, Synthesis, Profile, Orchestration)
+│   │   └── providers/     # Auth and Query providers
+│   └── public/            # Static assets (favicon, logo)
+└── docs/                  # Technical documentation (gitignored deployment configs)
+```
+
+---
+
+## Author
+
+Built with ❤️ by **[vuishere.com](https://www.vuishere.com)**
+
+> For enterprise licensing, private deployment inquiries, or collaborations,  
+> please reach out through the official website.
+
+---
+
+<div align="center">
+  <sub>layman.ai — Making technical complexity accessible.</sub>
+</div>
